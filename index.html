@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Hello, world!</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/samsunginternet/OneUI-Web/oui-css/oui.css">
+</head>
+<body>
+<main class="container">
+    <div class="oui-viewing">
+        <!-- Viewing area -->
+        <h1 class="oui-viewing__title">Captcha Decoder!</h1>
+    </div>
+    <div class="oui-interaction">
+        <!-- Interaction area -->
+        <div class="oui-bubble">
+            <p class="oui-overlay-bubble-item">원하는 Captcha 방식</p>
+            <ul>
+                <label class="oui-label oui-container-radio" for="radio-oui">
+                    <input id="radio-oui" type="radio" class="oui-input-radio" name="radio" value="radio1">
+                    <span class="oui-input-text">숫자</span>
+                    <span class="oui-input-radio-checkmark"></span>
+                </label>
+            </ul>
+        </div>
+    </div>
+</main>
+</body>
+</html>
+
+</body>
+<link rel="stylesheet" href="css/._OneUI-Web/oui.css">
+<script>
+    import * as tf from '@tensorflow/tfjs';
+    const model = await tf.loadLayersModel('model/tfjs/model.json');
+
+    const example = tf.fromPixels(webcamElement);  // for example
+    const prediction = model.predict(example);
+     /*Auto load dark theme*/
+</script>
+</html>
