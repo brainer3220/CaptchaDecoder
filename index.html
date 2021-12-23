@@ -42,7 +42,7 @@
 <script>
     import * as tf from '@tensorflow/tfjs';
     const model = await tf.loadLayersModel('model/tfjs/model.json');
-
+<script type="text/javascript" href="js/resize.js"></script>
     const example = tf.fromPixels(webcamElement);  // for example
     const prediction = model.predict(example);
      /*Auto load dark theme*/
