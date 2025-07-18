@@ -9,4 +9,7 @@ Because typing CAPTCHA is tedious and AI is fun.
 1. Decode number based CAPTCHA (5 digits)
 
 ## How to run
-Open `index.html` in a modern browser. Enter an image URL and press the decode button to see the predicted digits.
+Load the extension in Chrome:
+1. Open the Extensions page and enable **Developer mode**.
+2. Choose **Load unpacked** and select this project folder.
+3. Click the extension icon and enter an image URL to decode the CAPTCHA.
