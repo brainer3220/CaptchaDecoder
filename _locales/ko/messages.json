@@ -1,6 +1,66 @@
 {
   "extName": {
     "message": "CaptchaDecoder",
-    "description": "지긋지긋한 캡처 언제까지 한땀 한땀 적으실 건가요?\n AI가 해결해드립니다.\n현재는 숫자 기반의 캡차만 가능하지만 아마 머지않아 다른 것도 생길 거에요. 모두 응원해 주세요."
+    "description": "확장 프로그램 이름"
+  },
+  "extDescription": {
+    "message": "AI 기반 숫자형 CAPTCHA를 브라우저 안에서 손쉽게 해독하세요.",
+    "description": "웹 스토어에 표시되는 설명"
+  },
+  "extSubtitle": {
+    "message": "AI가 숫자형 CAPTCHA를 대신 입력해 드립니다.",
+    "description": "팝업 상단에 노출되는 보조 설명"
+  },
+  "decodeButton": {
+    "message": "디코드",
+    "description": "디코드 버튼의 텍스트"
+  },
+  "resetButton": {
+    "message": "초기화",
+    "description": "초기화 버튼 텍스트"
+  },
+  "urlLabel": {
+    "message": "이미지 주소",
+    "description": "URL 입력 필드 레이블"
+  },
+  "fileLabel": {
+    "message": "이미지 파일",
+    "description": "파일 선택 레이블"
+  },
+  "resultLabel": {
+    "message": "예측 결과",
+    "description": "결과 영역 레이블"
+  },
+  "statusLoadingModel": {
+    "message": "모델을 불러오는 중...",
+    "description": "모델 로딩 상태 메시지"
+  },
+  "statusProcessing": {
+    "message": "이미지를 분석하는 중...",
+    "description": "이미지 처리 상태 메시지"
+  },
+  "errorNoInput": {
+    "message": "이미지 주소를 입력하거나 파일을 선택하세요.",
+    "description": "입력 없음 오류 메시지"
+  },
+  "errorLoadImage": {
+    "message": "이미지를 불러오지 못했습니다.",
+    "description": "이미지 로딩 실패 메시지"
+  },
+  "errorModel": {
+    "message": "모델을 초기화할 수 없습니다.",
+    "description": "모델 로딩 실패 메시지"
+  },
+  "placeholderUrl": {
+    "message": "https://example.com/captcha.png",
+    "description": "URL 입력란 placeholder"
+  },
+  "previewAlt": {
+    "message": "CAPTCHA 미리보기",
+    "description": "미리보기 이미지 대체 텍스트"
+  },
+  "emptyResult": {
+    "message": "—",
+    "description": "예측 값이 없을 때 표시되는 기호"
   }
 }

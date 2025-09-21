@@ -1,26 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Captcha Decoder</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/samsunginternet/OneUI-Web/oui-css/oui.min.css">
+  <title>__MSG_extName__</title>
+  <link rel="stylesheet" href="css/popup.css">
 </head>
 <body>
-  <main class="container">
-    <h1 class="oui-viewing__title">Captcha Decoder</h1>
-    <div class="oui-interaction">
-      <div class="oui-bubble">
-        <p class="oui-overlay-bubble-item">이미지 URL을 입력하세요</p>
-        <input type="text" id="image-url" class="oui-text-field" />
-        <button id="decode-btn" class="oui-button">Decode</button>
+  <main class="popup" role="main">
+    <header class="popup__header">
+      <h1 class="popup__title">__MSG_extName__</h1>
+      <p class="popup__subtitle">__MSG_extSubtitle__</p>
+    </header>
+
+    <form id="decode-form" class="form" novalidate>
+      <div class="form__group">
+        <label class="form__label" for="image-url">__MSG_urlLabel__</label>
+        <input
+          id="image-url"
+          name="image-url"
+          class="form__control"
+          type="url"
+          placeholder="__MSG_placeholderUrl__"
+          inputmode="url"
+          autocomplete="off"
+        >
       </div>
-      <div id="result" class="oui-bubble"></div>
-    </div>
+
+      <div class="form__group">
+        <label class="form__label" for="image-file">__MSG_fileLabel__</label>
+        <input
+          id="image-file"
+          name="image-file"
+          class="form__control"
+          type="file"
+          accept="image/*"
+        >
+      </div>
+
+      <div class="form__actions">
+        <button class="button" type="submit">__MSG_decodeButton__</button>
+        <button class="button button--secondary" type="reset">__MSG_resetButton__</button>
+      </div>
+    </form>
+
+    <section class="preview" aria-live="polite">
+      <img id="preview" class="preview__image" alt="__MSG_previewAlt__" hidden>
+    </section>
+
+    <section class="result">
+      <h2 class="result__title">__MSG_resultLabel__</h2>
+      <output id="result" class="result__value" role="status" aria-live="polite"></output>
+    </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
-  <script src="js/resize_image.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/vendor/tf.min.js" defer></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1,32 +1,16 @@
 {
-    "manifest_version": 2,
-    "name": "__MSG_extName__",
-    "version": "0.0.1",
-
-    "description": "지긋지긋한 캡처 언제까지 한땀 한땀 적으실 건가요?\n AI가 해결해드립니다.\n현재는 숫자 기반의 캡차만 가능하지만 아마 머지않아 다른 것도 생길 거에요. 모두 응원해 주세요.",
-//    "icons": {...},
-    "default_locale": "ko",
-
-    // 선택: 이 중 하나만 설정할 수 있음
-    "browser_action": {
-        "default_popup": "index.html"
-//        "default_icon": {
-//            "16": "icons/icon16.png",
-//            "32": "icon.png"
-//        }
-    },
-//    "page_action": {...},
-//    "sidebar_action": {...}, // 사이드바앱
-
-    // 그 외: 필요한 것을 추가
-    "background": {
-//        "scripts": ["js/context_menu.js"],
-        "page": "index.html",
-        "persistent": true
-    },
-//    "content_scripts": ["js/content_script.js"],
-    "permissions": [
-        "contextMenus",
-        "clipboardWrite"
-    ]
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "description": "__MSG_extDescription__",
+  "version": "1.0.0",
+  "default_locale": "ko",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "__MSG_extName__"
+  },
+  "permissions": [],
+  "host_permissions": [
+    "http://*/",
+    "https://*/"
+  ]
 }
