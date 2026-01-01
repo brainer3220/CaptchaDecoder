@@ -25,19 +25,47 @@ function decodePrediction(pred) {
   return result;
 }
 
+function isNetworkOrCorsError(error) {
+  const message = (error && error.message ? error.message : String(error)).toLowerCase();
+  return (
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('cors') ||
+    message.includes('typeerror: network')
+  );
+}
+
 async function run() {
-  await loadModel();
+  const resultEl = document.getElementById('result');
+  try {
+    await loadModel();
+  } catch (error) {
+    if (isNetworkOrCorsError(error)) {
+      resultEl.innerText = '모델을 불러오지 못했습니다. 네트워크 연결이나 CORS 설정을 확인해주세요.';
+    } else {
+      resultEl.innerText = '모델 로딩 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    }
+    return;
+  }
   const url = document.getElementById('image-url').value;
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = async () => {
-    const input = preprocessImage(img);
-    const pred = model.predict(input);
-    const text = decodePrediction(pred);
-    document.getElementById('result').innerText = text;
+    try {
+      const input = preprocessImage(img);
+      const pred = model.predict(input);
+      const text = decodePrediction(pred);
+      resultEl.innerText = text;
+    } catch (error) {
+      if (isNetworkOrCorsError(error)) {
+        resultEl.innerText = '예측에 필요한 리소스를 불러오지 못했습니다. 네트워크 연결이나 CORS 설정을 확인해주세요.';
+      } else {
+        resultEl.innerText = '예측 중 오류가 발생했습니다. 입력 이미지를 확인하거나 잠시 후 다시 시도해주세요.';
+      }
+    }
   };
   img.onerror = () => {
-    document.getElementById('result').innerText = '이미지를 불러올 수 없습니다.';
+    resultEl.innerText = '이미지를 불러올 수 없습니다.';
   };
   img.src = url;
 }
