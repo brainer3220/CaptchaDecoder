@@ -16,8 +16,15 @@ async function loadModel() {
   }
 }
 
+function getPreprocessOptions() {
+  const grayscaleCheckbox = document.getElementById('enable-grayscale-contrast');
+  return {
+    applyGrayscaleContrast: grayscaleCheckbox ? grayscaleCheckbox.checked : false,
+  };
+}
+
 function preprocessImage(img) {
-  const canvas = resizeImage(img);
+  const canvas = resizeImage(img, getPreprocessOptions());
   let tensor = tf.browser.fromPixels(canvas, 1);
   tensor = tensor.expandDims(0).toFloat().div(255.0);
   return tensor;
