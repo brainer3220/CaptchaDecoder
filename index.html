@@ -5,6 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Captcha Decoder</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/samsunginternet/OneUI-Web/oui-css/oui.min.css">
+  <style>
+    .result-primary {
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      word-break: break-all;
+    }
+
+    .result-meta {
+      color: #555;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .result-confidence ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .result-confidence li {
+      background: #f7f7f7;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .result-confidence .position-label {
+      font-weight: 600;
+    }
+
+    .result-confidence .confidence-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-actions {
+      margin-top: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+  </style>
 </head>
 <body>
   <main class="container">
@@ -19,7 +65,15 @@
         </label>
         <button id="decode-btn" class="oui-button">Decode</button>
       </div>
-      <div id="result" class="oui-bubble"></div>
+      <div id="result" class="oui-bubble">
+        <div id="result-text" class="result-primary"></div>
+        <div id="result-timing" class="result-meta"></div>
+        <div id="result-confidence" class="result-confidence"></div>
+        <div class="result-actions">
+          <button id="retry-btn" class="oui-button oui-button--subtle" type="button">다시 시도</button>
+          <button id="new-image-btn" class="oui-button oui-button--ghost" type="button">다른 이미지</button>
+        </div>
+      </div>
     </div>
   </main>
 
