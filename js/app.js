@@ -37,6 +37,13 @@ function isNetworkOrCorsError(error) {
 
 async function run() {
   const resultEl = document.getElementById('result');
+  const url = document.getElementById('image-url').value.trim();
+
+  if (!url || !/^https?:\/\//i.test(url)) {
+    resultEl.innerText = '이미지 URL을 입력하고 http/https로 시작하는지 확인해주세요.';
+    return;
+  }
+
   try {
     await loadModel();
   } catch (error) {
@@ -47,7 +54,6 @@ async function run() {
     }
     return;
   }
-  const url = document.getElementById('image-url').value;
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = async () => {
