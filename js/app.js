@@ -1,6 +1,10 @@
 let model;
 let isDecoding = false;
 const decodeBtn = document.getElementById('decode-btn');
+const CONFIDENCE_THRESHOLD = 0.6;
+const MAX_CONSECUTIVE_REPEAT = 2;
+const TOP_CANDIDATES_TO_COMPARE = 3;
+const ALTERNATIVE_MARGIN = 0.1;
 
 function setDecodingState(active) {
   isDecoding = active;
@@ -21,15 +25,58 @@ function preprocessImage(img) {
 
 function decodePrediction(pred) {
   const digits = '0123456789';
-  const arr = pred.squeeze().argMax(-1).arraySync();
-  let result = '';
-  let last = null;
-  for (const i of arr) {
-    if (i === last || i >= digits.length) continue;
-    result += digits[i];
-    last = i;
-  }
-  return result;
+  return tf.tidy(() => {
+    const softmaxed = tf.softmax(pred.squeeze(), -1);
+    const probs = softmaxed.arraySync();
+    let result = '';
+    let lastChar = null;
+    let repeatCount = 0;
+    const lowConfidencePositions = [];
+
+    probs.forEach((positionProbs, idx) => {
+      const candidates = positionProbs
+        .map((value, index) => ({ value, index }))
+        .sort((a, b) => b.value - a.value);
+
+      const topCandidates = candidates.slice(0, TOP_CANDIDATES_TO_COMPARE).map(({ value, index }) => ({
+        char: digits[index] ?? '',
+        prob: value,
+      }));
+
+      const bestCandidate = topCandidates[0];
+
+      if (!bestCandidate || bestCandidate.prob < CONFIDENCE_THRESHOLD) {
+        lowConfidencePositions.push(idx + 1);
+        return;
+      }
+
+      let chosen = bestCandidate;
+      const exceedsRepeatLimit = chosen.char === lastChar && repeatCount >= MAX_CONSECUTIVE_REPEAT;
+
+      if (exceedsRepeatLimit) {
+        const alternative = topCandidates.find(
+          (option) => option.char !== lastChar && option.prob >= chosen.prob - ALTERNATIVE_MARGIN,
+        );
+        if (alternative) {
+          chosen = alternative;
+        }
+      }
+
+      if (!chosen.char) return;
+
+      if (chosen.char === lastChar) {
+        repeatCount += 1;
+        if (repeatCount > MAX_CONSECUTIVE_REPEAT) return;
+      } else {
+        repeatCount = 1;
+      }
+
+      result += chosen.char;
+      lastChar = chosen.char;
+    });
+
+    return { text: result, lowConfidencePositions };
+  });
 }
 
 function isNetworkOrCorsError(error) {
@@ -74,8 +121,14 @@ async function run() {
     try {
       const input = preprocessImage(img);
       const pred = model.predict(input);
-      const text = decodePrediction(pred);
-      resultEl.innerText = text;
+      const { text, lowConfidencePositions } = decodePrediction(pred);
+      const warningMessage =
+        lowConfidencePositions.length > 0 ? ` (신뢰도 낮음: 위치 ${lowConfidencePositions.join(', ')})` : '';
+      const fallbackText = `결과를 확신하기 어렵습니다${warningMessage}`;
+      const displayText = text ? `${text}${warningMessage}` : fallbackText;
+      resultEl.innerText = displayText;
+      pred.dispose?.();
+      input.dispose?.();
     } catch (error) {
       if (isNetworkOrCorsError(error)) {
         resultEl.innerText = '예측에 필요한 리소스를 불러오지 못했습니다. 네트워크 연결이나 CORS 설정을 확인해주세요.';
