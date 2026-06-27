@@ -2,9 +2,9 @@ let model;
 let isDecoding = false;
 const decodeBtn = document.getElementById('decode-btn');
 const CONFIDENCE_THRESHOLD = 0.6;
-const MAX_CONSECUTIVE_REPEAT = 2;
-const TOP_CANDIDATES_TO_COMPARE = 3;
-const ALTERNATIVE_MARGIN = 0.1;
+const EXPECTED_CAPTCHA_LENGTH = 5;
+const CTC_CHARACTERS = '2345678bcdefgmnpwxy';
+const CTC_BLANK_INDEX = CTC_CHARACTERS.length;
 const resultTextEl = document.getElementById('result-text');
 const resultTimingEl = document.getElementById('result-timing');
 const resultConfidenceEl = document.getElementById('result-confidence');
@@ -30,67 +30,53 @@ function getPreprocessOptions() {
 
 function preprocessImage(img) {
   const canvas = resizeImage(img, getPreprocessOptions());
-  let tensor = tf.browser.fromPixels(canvas, 1);
-  tensor = tensor.expandDims(0).toFloat().div(255.0);
-  return tensor;
+  return tf.tidy(() =>
+    tf.browser
+      .fromPixels(canvas, 1)
+      .transpose([1, 0, 2])
+      .expandDims(0)
+      .toFloat()
+      .div(255.0),
+  );
+}
+
+function getBestClass(positionProbs) {
+  return positionProbs.reduce(
+    (best, prob, index) => (prob > best.prob ? { index, prob } : best),
+    { index: -1, prob: Number.NEGATIVE_INFINITY },
+  );
 }
 
 function decodePrediction(pred) {
-  const digits = '0123456789';
-  return tf.tidy(() => {
-    const softmaxed = tf.softmax(pred.squeeze(), -1);
-    const probs = softmaxed.arraySync();
-    let result = '';
-    let lastChar = null;
-    let repeatCount = 0;
-    const lowConfidencePositions = [];
-    const confidences = [];
+  const probs = pred.squeeze([0]).arraySync();
+  let result = '';
+  let previousIndex = null;
+  const lowConfidencePositions = [];
+  const confidences = [];
 
-    probs.forEach((positionProbs, idx) => {
-      const candidates = positionProbs
-        .map((value, index) => ({ value, index }))
-        .sort((a, b) => b.value - a.value);
+  probs.forEach((positionProbs) => {
+    const { index, prob } = getBestClass(positionProbs);
 
-      const topCandidates = candidates.slice(0, TOP_CANDIDATES_TO_COMPARE).map(({ value, index }) => ({
-        char: digits[index] ?? '',
-        prob: value,
-      }));
+    if (index === CTC_BLANK_INDEX || index < 0 || index >= CTC_CHARACTERS.length) {
+      previousIndex = null;
+      return;
+    }
 
-      const bestCandidate = topCandidates[0];
+    if (index === previousIndex) return;
 
-      if (!bestCandidate || bestCandidate.prob < CONFIDENCE_THRESHOLD) {
-        lowConfidencePositions.push(idx + 1);
-        return;
-      }
+    const char = CTC_CHARACTERS[index];
+    const decodedPosition = result.length + 1;
+    result += char;
+    previousIndex = index;
 
-      let chosen = bestCandidate;
-      const exceedsRepeatLimit = chosen.char === lastChar && repeatCount >= MAX_CONSECUTIVE_REPEAT;
+    if (prob < CONFIDENCE_THRESHOLD) {
+      lowConfidencePositions.push(decodedPosition);
+    }
 
-      if (exceedsRepeatLimit) {
-        const alternative = topCandidates.find(
-          (option) => option.char !== lastChar && option.prob >= chosen.prob - ALTERNATIVE_MARGIN,
-        );
-        if (alternative) {
-          chosen = alternative;
-        }
-      }
-
-      if (!chosen.char) return;
-
-      if (chosen.char === lastChar) {
-        repeatCount += 1;
-        if (repeatCount > MAX_CONSECUTIVE_REPEAT) return;
-      } else {
-        repeatCount = 1;
-      }
-
-      result += chosen.char;
-      lastChar = chosen.char;
-      confidences.push({ position: idx + 1, char: chosen.char, prob: chosen.prob });
-    });
-
-    return { text: result, lowConfidencePositions, confidences };
+    confidences.push({ position: decodedPosition, char, prob });
   });
+
+  return { text: result, lowConfidencePositions, confidences };
 }
 
 function isNetworkOrCorsError(error) {
@@ -135,21 +121,27 @@ async function run() {
   img.onload = async () => {
     const startTime = performance.now();
     const startedAt = new Date();
+    let input;
+    let pred;
     try {
-      const input = preprocessImage(img);
-      const pred = model.predict(input);
+      input = preprocessImage(img);
+      pred = model.predict(input);
       const { text, lowConfidencePositions, confidences } = decodePrediction(pred);
       const durationMs = Math.round(performance.now() - startTime);
       const timestampText = startedAt.toLocaleString();
-      const warningMessage =
-        lowConfidencePositions.length > 0 ? ` (신뢰도 낮음: 위치 ${lowConfidencePositions.join(', ')})` : '';
-      const fallbackText = `결과를 확신하기 어렵습니다${warningMessage}`;
-      const displayText = text ? `${text}${warningMessage}` : fallbackText;
+      const confidenceWarning =
+        lowConfidencePositions.length > 0 ? `신뢰도 낮음: 위치 ${lowConfidencePositions.join(', ')}` : '';
+      const lengthWarning =
+        text && text.length !== EXPECTED_CAPTCHA_LENGTH
+          ? `예상 길이(${EXPECTED_CAPTCHA_LENGTH}자)와 다름: ${text.length}자`
+          : '';
+      const warningMessage = [confidenceWarning, lengthWarning].filter(Boolean).join(' · ');
+      const warningSuffix = warningMessage ? ` (${warningMessage})` : '';
+      const fallbackText = `결과를 확신하기 어렵습니다${warningSuffix}`;
+      const displayText = text ? `${text}${warningSuffix}` : fallbackText;
       resultTextEl.innerText = displayText;
       resultTimingEl.innerText = `예측 시작: ${timestampText} · 소요 시간: ${durationMs}ms`;
       renderConfidence(confidences);
-      pred.dispose?.();
-      input.dispose?.();
     } catch (error) {
       if (isNetworkOrCorsError(error)) {
         resultTextEl.innerText = '예측에 필요한 리소스를 불러오지 못했습니다. 네트워크 연결이나 CORS 설정을 확인해주세요.';
@@ -159,6 +151,8 @@ async function run() {
       resultTimingEl.innerText = '';
       resultConfidenceEl.innerHTML = '';
     } finally {
+      pred?.dispose?.();
+      input?.dispose?.();
       setDecodingState(false);
     }
   };

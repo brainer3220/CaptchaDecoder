@@ -1,4 +1,5 @@
 # CaptchaDecoder
+
 ## What is it?
 This is an AI based CAPTCHA decoder.
 
@@ -6,7 +7,15 @@ This is an AI based CAPTCHA decoder.
 Because typing CAPTCHA is tedious and AI is fun.
 
 ## What can CaptchaDecoder do?
-1. Decode number based CAPTCHA (5 digits)
+1. Decode 5-character CAPTCHAs that use the model vocabulary `2345678bcdefgmnpwxy`.
 
 ## How to run
-Open `index.html` in a modern browser. Enter an image URL and press the decode button to see the predicted digits.
+Serve the repository with a local HTTP server, open the served `index.html` in a modern browser, enter an image URL, and press the decode button to see the predicted text.
+
+For example:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000/`.
